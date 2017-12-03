@@ -29,7 +29,7 @@ const uint16_t DEBOUNCE_CYCLES = 30;		// Number of cycles to debounce on / off
 const uint16_t START_TRACKING_CYCLES = 100;	// Delay if hand is detected before starting tracking
 const uint16_t END_TRACKING_CYCLES = 100;	// Delay if no hand is detected while tracking before stopping tracking
 const uint16_t HAND_MINIMUM_CHANGE = 10;	// Minimal brightness change allowed
-const uint16_t SENSE_MAX_OFFSET = 20;		// Defines offset from SENSE_MAX to prevent signal noise from triggering
+const uint16_t SENSE_MAX_OFFSET = 50;		// Defines offset from SENSE_MAX to prevent signal noise from triggering
 
 
 // in[] holds the measured analogRead() values for defined distances
