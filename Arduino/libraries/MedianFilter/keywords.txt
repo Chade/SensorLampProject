@@ -1,0 +1,25 @@
+#######################################
+# Syntax Coloring Map For MedianFilter
+#######################################
+
+#######################################
+# Class (KEYWORD1)
+#######################################
+
+MedianFilter	KEYWORD1
+~MedianFilter	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+# methods names in commond
+add	KEYWORD2
+get	KEYWORD2
+printBuffer	KEYWORD2
+printSorted	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
