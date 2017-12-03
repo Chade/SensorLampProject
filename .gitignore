@@ -4,3 +4,9 @@ Arduino/sensor_lamp/.ino.cpp
 Arduino/sensor_lamp/.project
 Arduino/sensor_lamp/.settings/language.settings.xml
 Arduino/sensor_lamp/.settings/org.eclipse.cdt.core.prefs
+Arduino/sensor_lamp/Release/.ino.cpp.d
+Arduino/sensor_lamp/Release/.ino.cpp.o
+Arduino/sensor_lamp/Release/arduino.ar
+Arduino/sensor_lamp/Release/sensor_lamp.eep
+Arduino/sensor_lamp/Release/sensor_lamp.elf
+Arduino/sensor_lamp/Release/sensor_lamp.hex
