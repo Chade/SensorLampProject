@@ -20,17 +20,22 @@
 const uint8_t LED_PIN = 3;
 const uint8_t SENSOR_PIN = A3;
 
-const uint8_t FILTERSIZE = 9;
+const uint8_t FILTERSIZE = 9;               // Sample size for median filter
 
-const uint8_t MIN_BRIGHTNESS = 5;			// Min brightness (0 - 255)
-const uint8_t MAX_BRIGHTNESS = 255;			// Max brightness (0 - 255)
+const uint8_t MIN_BRIGHTNESS = 5;           // Min brightness (0 - 255)
+const uint8_t MAX_BRIGHTNESS = 255;         // Max brightness (0 - 255)
 
-const uint16_t DEBOUNCE_CYCLES = 30;		// Number of cycles to debounce on / off
-const uint16_t START_TRACKING_CYCLES = 100;	// Delay if hand is detected before starting tracking
-const uint16_t END_TRACKING_CYCLES = 100;	// Delay if no hand is detected while tracking before stopping tracking
-const uint16_t HAND_MINIMUM_CHANGE = 10;	// Minimal brightness change allowed
-const uint16_t SENSE_MAX_OFFSET = 50;		// Defines offset from SENSE_MAX to prevent signal noise from triggering
+const uint8_t CYCLETIME = 10;               // Cycle time in ms (0 - 255)
 
+const uint16_t DEBOUNCE_CYCLES = 30;		    // Number of cycles to debounce on / off
+const uint16_t START_TRACKING_CYCLES = 100; // Delay if hand is detected before starting tracking
+const uint16_t END_TRACKING_CYCLES = 100;   // Delay if no hand is detected while tracking before stopping tracking
+const uint16_t HAND_MINIMUM_CHANGE = 10;    // Minimal brightness change allowed
+const uint16_t SENSE_MAX_OFFSET = 50;       // Defines offset from SENSE_MAX to prevent signal noise from triggering lamp
+
+uint16_t SENSE_MIN = 200;                   // Minimum sensing height in mm, must not be smaller then min value in out[]
+uint16_t SENSE_MAX = 1500;                  // Maximum sensing height in mm, must not be greater then max value in out[]
+uint16_t TRACK_DISTANCE = 200;              // Distance in mm to move hand to go from min to max brightness
 
 // in[] holds the measured analogRead() values for defined distances
 // Note: The in array should have increasing values
@@ -38,18 +43,12 @@ const int in[]  = {90, 97, 105, 113, 124, 134, 147, 164, 185, 218, 255, 317, 414
 // out[] holds the corresponding distances in mm
 const int out[] = {1500, 1400, 1300, 1200, 1100, 1000, 900, 800, 700, 600, 500, 400, 300, 200};
 
-uint16_t SENSE_MIN = 200;					// Minimum sensing height in mm, must not be smaller then min value in out[]
-uint16_t SENSE_MAX = 1500;          		// Maximum sensing height in mm, must not be greater then max value in out[]
-uint16_t TRACK_DISTANCE = 200;     			// Distance in mm to move hand to go from min to max brightness
-
 boolean lamp_lighted = false;
 boolean hand_tracking = false;
 
 uint16_t tracking_lower_limit = SENSE_MIN;
 uint16_t tracking_upper_limit = SENSE_MAX;
 
-uint16_t distance = 0;
-uint16_t adc_input = 0;
 uint8_t pwm_output = 0;
 
 uint8_t stored_bright = MAX_BRIGHTNESS;
@@ -100,20 +99,23 @@ float multiMap (float val, const float * _in, const float * _out, const uint8_t&
 void setup ()  {
 	analogWrite(LED_PIN, 0);
 
+  // Fill median filter
 	for (uint8_t i = 0; i < FILTERSIZE; i++){
-		// Fill filter
 		filter.add(analogRead(SENSOR_PIN));
 		delay(10);
 	}
 
 	// Get median
-	adc_input = filter.get();
+	uint16_t adc_input = filter.get();
 
 	// Convert analog value to distance in mm
-	distance = multiMap(adc_input, in, out, 14);
+	uint16_t distance = multiMap(adc_input, in, out, 14);
 
 	// Set max sense value
-	if (distance > (SENSE_MIN + TRACK_DISTANCE + SENSE_MAX_OFFSET)) {
+  if (distance > SENSE_MAX) {
+    ;
+  }
+	else if (distance > (SENSE_MIN + TRACK_DISTANCE + SENSE_MAX_OFFSET)) {
 		SENSE_MAX = distance - SENSE_MAX_OFFSET;
 	}
 	else if (distance > (SENSE_MIN + SENSE_MAX_OFFSET)) {
@@ -135,7 +137,9 @@ void setup ()  {
 	}
 }
 
-void loop ()  {
+void loop () {
+  uint32_t start_time = millis();
+  
 	// Debounce if neccessary
 	if(debounce_cycles) {
 		debounce_cycles -= 1;
@@ -143,23 +147,13 @@ void loop ()  {
 	else {
 		// Read analog value and add to median filter
 		filter.add(analogRead(SENSOR_PIN));
-		adc_input = filter.get();
+		uint16_t adc_input = filter.get();
 
 		// Convert analog value to distance in mm
-		distance = multiMap(adc_input, in, out, 14);
-
+		uint16_t distance = multiMap(adc_input, in, out, 14);
+    
 		if (hand_tracking) {
 			if(distance < SENSE_MAX) {
-//				if(distance < TRACK_THRESHOLD_LOWER) {
-//					hand_tracked_bright = MIN_BRIGHTNESS;
-//				}
-//				else if (distance > TRACK_THRESHOLD_UPPER) {
-//					hand_tracked_bright = MAX_BRIGHTNESS;
-//				}
-//				else {
-//					hand_tracked_bright = map(distance, TRACK_THRESHOLD_LOWER, TRACK_THRESHOLD_UPPER, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
-//				}
-
 				if(distance < tracking_lower_limit) {
 					hand_tracked_bright = MIN_BRIGHTNESS;
 
@@ -247,6 +241,9 @@ void loop ()  {
 		analogWrite(LED_PIN, pwm_output);
 	}
 
-	delay(5);
+  // Wait for constant cycle time
+  uint32_t delta = millis() - start_time;
+  uint8_t ms = (delta < CYCLETIME) ? CYCLETIME - delta : 0;
+	delay(ms);
 }
 
