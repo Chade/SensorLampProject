@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <MedianFilter.h>
+#include "src/MedianFilter/MedianFilter.h"
 
 
 //  Luminch One - Copyright 2012 by Francisco Castro <http://fran.cc>
