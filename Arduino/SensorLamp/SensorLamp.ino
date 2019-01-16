@@ -60,42 +60,6 @@ uint16_t debounce_cycles = 0;
 
 MedianFilter filter(FILTERSIZE);
 
-int multiMap (int val, const int *_in, const int *_out, const uint8_t& size)
-{
-	// Take care the value is within range
-	// val = constrain(val, _in[0], _in[size-1]);
-	if (val <= _in[0]) return _out[0];
-	if (val >= _in[size-1]) return _out[size-1];
-
-	// Search right interval
-	uint8_t pos = 1;  // _in[0] allready tested
-	while (val > _in[pos]) pos++;
-
-	// This will handle all exact "points" in the _in array
-	if (val == _in[pos]) return _out[pos];
-
-	// Interpolate in the right segment for the rest
-	return (val - _in[pos-1]) * (_out[pos] - _out[pos-1]) / (_in[pos] - _in[pos-1]) + _out[pos-1];
-}
-
-float multiMap (float val, const float * _in, const float * _out, const uint8_t& size)
-{
-	// Take care the value is within range
-	// val = constrain(val, _in[0], _in[size-1]);
-	if (val <= _in[0]) return _out[0];
-	if (val >= _in[size-1]) return _out[size-1];
-
-	// Search right interval
-	uint8_t pos = 1;  // _in[0] allready tested
-	while (val > _in[pos]) pos++;
-
-	// This will handle all exact "points" in the _in array
-	if (val == _in[pos]) return _out[pos];
-
-	// Interpolate in the right segment for the rest
-	return (val - _in[pos-1]) * (_out[pos] - _out[pos-1]) / (_in[pos] - _in[pos-1]) + _out[pos-1];
-}
-
 void setup ()  {
   // Set pins
   pinMode(SENSOR_PIN, INPUT);
@@ -112,7 +76,7 @@ void setup ()  {
 	uint16_t adc_input = filter.get();
 
 	// Convert analog value to distance in mm
-	uint16_t distance = multiMap(adc_input, in, out, 14);
+	uint16_t distance = MedianFilter::multiMap(adc_input, in, out, 14);
 
 	// Set max sense value
   if (distance > SENSE_MAX) {
@@ -153,7 +117,7 @@ void loop () {
 		uint16_t adc_input = filter.get();
 
 		// Convert analog value to distance in mm
-		uint16_t distance = multiMap(adc_input, in, out, 14);
+		uint16_t distance = MedianFilter::multiMap(adc_input, in, out, 14);
     
 		if (hand_tracking) {
 			if(distance < SENSE_MAX) {
