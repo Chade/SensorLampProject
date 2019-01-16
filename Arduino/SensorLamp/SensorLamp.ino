@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "src/MedianFilter/MedianFilter.h"
+#include <MedianFilter.h>
 
 
 //  Luminch One - Copyright 2012 by Francisco Castro <http://fran.cc>
@@ -97,6 +97,9 @@ float multiMap (float val, const float * _in, const float * _out, const uint8_t&
 }
 
 void setup ()  {
+  // Set pins
+  pinMode(SENSOR_PIN, INPUT);
+  pinMode(LED_PIN,   OUTPUT);
 	analogWrite(LED_PIN, 0);
 
   // Fill median filter
